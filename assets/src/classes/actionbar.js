@@ -1,60 +1,116 @@
-class Action {
-    constructor (imgPath, mode, x, y) {
-        this.img = new Image();
+class ActionBarSlot {
+    constructor(index, x, y, size) {
+        this.index = index;
         this.x = x;
         this.y = y;
-        this.mode = mode;
-        this.img.src="../MyMoondew/assets/images/" + imgPath;
-        
+        this.size = size;
     }
-    draw (ctx) {
-        ctx.drawImage(this.img, this.x + 12, this.y + 12, 42, 42);
-        ctx.fillStyle = "black";
-        ctx.font = "18px Arial";
-        ctx.fillText("" + this.mode, this.x + (43 - (this.mode)), this.y + 56);
+
+    contains(canvasX, canvasY) {
+        return canvasX >= this.x
+            && canvasX <= this.x + this.size
+            && canvasY >= this.y
+            && canvasY <= this.y + this.size;
     }
 }
 
 class ActionBar {
-    constructor (x, y) {
-        this.img = new Image();
-        this.img.src = "../MyMoondew/assets/images/BarBack.png";
-        this.imgFrame = new Image();
-        this.imgFrame.src = "../MyMoondew/assets/images/ActionSelected.png";
+    constructor(x, y, inventory) {
         this.x = x;
         this.y = y;
-        this.actionOffsetX = 5;
-        this.actionOffsetY = 5;
-        this.actionSlotOffsetX = 64;
-        
-        this.actions = [];
-        this.actions.push(new Action("Hand.png", 0, this.x + (this.actionOffsetX + (this.actionSlotOffsetX * 9)), this.y + (this.actionOffsetY)));
-        this.actions.push(new Action("Hoe.png", 1, this.x + (this.actionOffsetX + (this.actionSlotOffsetX * 0)), this.y + (this.actionOffsetY)));
-        this.actions.push(new Action("Trowel.png", 2, this.x + (this.actionOffsetX + (this.actionSlotOffsetX * 1)), this.y + (this.actionOffsetY)));
-        this.actions.push(new Action("WateringCan.png", 3, this.x + (this.actionOffsetX + (this.actionSlotOffsetX * 2)), this.y + (this.actionOffsetY)));
-        this.actions.push(new Action("Sythe.png", 4, this.x + (this.actionOffsetX + (this.actionSlotOffsetX * 3)), this.y + (this.actionOffsetY)));
-        this.actions.push(new Action("Fert.png", 5, this.x + (this.actionOffsetX + (this.actionSlotOffsetX * 4)), this.y + (this.actionOffsetY)));
-        this.actions.push(new Action("Axe.png", 6, this.x + (this.actionOffsetX + (this.actionSlotOffsetX * 5)), this.y + (this.actionOffsetY)));
-        this.actions.push(new Action("PickAxe.png", 7, this.x + (this.actionOffsetX + (this.actionSlotOffsetX * 6)), this.y + (this.actionOffsetY)));
-        this.actions.push(new Action("Sword.png", 8, this.x + (this.actionOffsetX + (this.actionSlotOffsetX * 7)), this.y + (this.actionOffsetY)));
-        this.actions.push(new Action("Net.png", 9, this.x + (this.actionOffsetX + (this.actionSlotOffsetX * 8)), this.y + (this.actionOffsetY)));
-        
+        this.inventory = inventory;
+        this.slotSize = 58;
+        this.slotGap = 8;
+        this.slots = [];
+        this.rebuildSlots();
     }
 
-    draw (ctx, mode) {
-        ctx.drawImage(this.img, this.x, this.y);
-        this.actions.forEach((action, index) => {
-            if (tools [index]) {
-              action.draw(ctx);  
-            }
-        
-            
+    rebuildSlots() {
+        const totalWidth = (this.inventory.size * this.slotSize) + ((this.inventory.size - 1) * this.slotGap);
+        this.x = (1920 / 2) - (totalWidth / 2);
+        this.slots = Array.from({ length: this.inventory.size }, (_, index) => {
+            const slotX = this.x + (index * (this.slotSize + this.slotGap));
+            return new ActionBarSlot(index, slotX, this.y, this.slotSize);
         });
-        let modePos = mode - 1;
-        if (modePos < 0 ){
-            modePos = 9;
+    }
+
+    draw(ctx, selectedIndex, hoveredIndex) {
+        this.rebuildSlots();
+        const width = (this.inventory.size * this.slotSize) + ((this.inventory.size - 1) * this.slotGap);
+
+        ctx.save();
+        ctx.fillStyle = "rgba(7, 14, 8, 0.72)";
+        ctx.strokeStyle = "rgba(255,255,255,0.12)";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(this.x - 12, this.y - 46, width + 24, 110, 22);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = "rgba(242, 248, 232, 0.8)";
+        ctx.font = "16px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("Inventory • Click world items to pick them up • G drops • F uses • R changes seeds • S sleeps", 1920 / 2, this.y - 18);
+        ctx.restore();
+
+        this.slots.forEach((slot) => {
+            const slotItem = this.inventory.slots[slot.index];
+            const selected = slot.index === selectedIndex;
+            const hovered = slot.index === hoveredIndex;
+
+            ctx.save();
+            ctx.fillStyle = selected ? "rgba(143, 227, 106, 0.32)" : hovered ? "rgba(255,255,255,0.15)" : "rgba(5, 11, 6, 0.52)";
+            ctx.strokeStyle = selected ? "rgba(174, 245, 152, 0.95)" : "rgba(255,255,255,0.12)";
+            ctx.lineWidth = selected ? 3 : 1.5;
+            ctx.beginPath();
+            ctx.roundRect(slot.x, slot.y, slot.size, slot.size, 14);
+            ctx.fill();
+            ctx.stroke();
+
+            if (slotItem) {
+                slotItem.drawIcon(ctx, slot.x + 8, slot.y + 8, slot.size - 16);
+
+                ctx.fillStyle = "#f2f8e8";
+                ctx.font = "bold 15px Arial";
+                ctx.textAlign = "right";
+                ctx.textBaseline = "bottom";
+                ctx.fillText(slotItem.quantity > 1 ? String(slotItem.quantity) : "", slot.x + slot.size - 8, slot.y + slot.size - 6);
+            }
+
+            ctx.fillStyle = "#f2f8e8";
+            ctx.font = "bold 14px Arial";
+            ctx.textAlign = "left";
+            ctx.textBaseline = "top";
+            ctx.fillText(this.getSlotLabel(slot.index), slot.x + 8, slot.y + 8);
+            ctx.restore();
+        });
+
+        const selectedItem = this.inventory.getSelectedItem();
+        if (selectedItem) {
+            ctx.save();
+            ctx.fillStyle = "#f2f8e8";
+            ctx.font = "18px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(`${selectedItem.name} • ${selectedItem.description || selectedItem.type}`, 1920 / 2, this.y - 40);
+            ctx.restore();
         }
-        ctx.drawImage(this.imgFrame, this.x + (this.actionOffsetX - modePos + (this.actionSlotOffsetX * modePos)), this.y + (this.actionOffsetY), 70, 70);
+
+    }
+
+    getSlotLabel(index) {
+        const labels = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "="];
+        return labels[index] || "";
+    }
+
+    getSlotAt(canvasX, canvasY) {
+        const slot = this.slots.find((candidate) => candidate.contains(canvasX, canvasY));
+        if (!slot) {
+            return null;
+        }
+
+        return {
+            index: slot.index,
+            item: this.inventory.slots[slot.index] || null
+        };
     }
 }
-

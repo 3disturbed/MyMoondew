@@ -1,15 +1,14 @@
-//Character Blueprint
-class Character{ 
-    constructor(ctx){
+class Character {
+    constructor(ctx) {
         this.ctx = ctx;
         this.img = new Image();
-        this.img.src="../MyMoondew/assets/images/char.png";
+        this.img.src = "assets/images/char.png";
         this.drawWidth = 42;
         this.drawHeight = 42;
         this.frame = 0;
         this.frameWidth = 16;
-        this.frameHeight = 72/4;
-        this.framedelay = 30;
+        this.frameHeight = 72 / 4;
+        this.frameDelay = 18;
         this.frameCounter = 0;
         this.lastFrame = 2;
         this.direction = 2;
@@ -19,81 +18,138 @@ class Character{
         this.y = 0;
         this.vx = 0;
         this.vy = 0;
+        this.toolAnimation = 0;
+        this.maxEnergy = 100;
+        this.energy = this.maxEnergy;
+        this.exhausted = false;
     }
 
-    isMoving(){
-        return (this.vx != 0 || this.vy != 0);
+    isMoving() {
+        return this.vx !== 0 || this.vy !== 0;
     }
-    //where and how to draw charater
-    draw(){
 
+    update() {
         this.x -= this.vx;
         this.y += this.vy;
-        if (this.sprint){
+
+        if (this.sprint && !this.exhausted) {
             this.x -= this.vx;
             this.y += this.vy;
         }
-        
 
-        if (this.y > 5400){
-            this.y = 5400;
-        }
+        this.y = AnimationHelpers.clamp(this.y, -5400, 5400);
+        this.x = AnimationHelpers.clamp(this.x, -5400, 5400);
 
-        if (this.y < -5400){
-            this.y = -5400;
-        }
-        if (this.x > 5400){
-            this.x = 5400;
-        }
-        if (this.x < -5400){
-            this.x = -5400;
-        }
-        
-
-        if (this.frame > this.lastFrame){
+        if (this.frame > this.lastFrame) {
             this.frame = 0;
-               
         }
-        ctx.drawImage(this.img, this.frame*this.frameWidth, this.direction*this.frameHeight , 16, 72/4, 1920/2-this.drawWidth/2, 1080/2-this.drawHeight/2, this.drawWidth, this.drawWidth);
-        if (this.framedelay < this.frameCounter){
+
+        if (this.frameDelay < this.frameCounter) {
             this.frameCounter = 0;
-            if (this.isMoving()){
-                this.frame++;
-                
+            if (this.isMoving()) {
+                this.frame += 1;
+            } else {
+                this.frame = 1;
             }
-            
-
-        } 
-        this.frameCounter++;
-        if(this.sprint){
-            this.frameCounter++;
         }
-        
-        
-       
-    }
-    //set direction on the sprint sheet.
-    setDirection(direction){
-        switch (direction){
 
-            case"up":
+        this.frameCounter += this.sprint && !this.exhausted ? 2 : 1;
+        this.toolAnimation = Math.max(0, this.toolAnimation - 0.08);
+    }
+
+    draw() {
+        const bounce = AnimationHelpers.pulse(1 - this.toolAnimation) * 6;
+        const scale = 1 + (this.toolAnimation * 0.06);
+        const centerX = 1920 / 2;
+        const centerY = 1080 / 2;
+
+        this.ctx.save();
+        this.ctx.translate(centerX, centerY - bounce);
+        this.ctx.scale(scale, scale);
+        this.ctx.drawImage(
+            this.img,
+            this.frame * this.frameWidth,
+            this.direction * this.frameHeight,
+            this.frameWidth,
+            this.frameHeight,
+            -this.drawWidth / 2,
+            -this.drawHeight / 2,
+            this.drawWidth,
+            this.drawHeight
+        );
+        this.ctx.restore();
+    }
+
+    setDirection(direction) {
+        switch (direction) {
+            case "up":
                 this.direction = 0;
                 break;
-
-            case"down":
+            case "right":
+                this.direction = 1;
+                break;
+            case "down":
                 this.direction = 2;
                 break;
-
-            case"left":
+            case "left":
                 this.direction = 3;
                 break;
+            default:
+                break;
+        }
+    }
 
-            case"right":
-                this.direction = 1;
+    triggerToolAnimation() {
+        this.toolAnimation = 1;
+    }
+
+    setEnergy(energy, maxEnergy) {
+        this.maxEnergy = maxEnergy;
+        this.energy = energy;
+        this.exhausted = this.energy <= 0;
+    }
+
+    getTargetTile() {
+        const reach = 48;
+        let targetX = this.x;
+        let targetY = this.y;
+
+        switch (this.direction) {
+            case 0:
+                targetY += reach;
+                break;
+            case 1:
+                targetX += reach;
+                break;
+            case 2:
+                targetY -= reach;
+                break;
+            case 3:
+                targetX -= reach;
+                break;
+            default:
                 break;
         }
 
-        
+        return { x: targetX, y: targetY };
+    }
 
+    getFacingTilePosition() {
+        const targetTile = this.getTargetTile();
+
+        return {
+            x: snapToTileOrigin(targetTile.x),
+            y: snapToTileOrigin(targetTile.y)
+        };
+    }
+
+    getFacingPosition(distance = 48) {
+        const targetTile = this.getTargetTile();
+        const reachScale = distance / 48;
+
+        return {
+            x: this.x + ((targetTile.x - this.x) * reachScale),
+            y: this.y + ((targetTile.y - this.y) * reachScale)
+        };
     }
 }

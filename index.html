@@ -3,22 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Favicon -->
-    <!-- <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png"> -->
-
     <link rel="stylesheet" href="assets/css/style.css">
     <title>Moondew</title>
 </head>
 <body>
-    <canvas id="game" width="1920px" height="1080px"></canvas>
+    <div class="app-shell">
+        <canvas id="game" width="1920" height="1080" aria-label="Moondew game canvas"></canvas>
+
+        <div id="ui-layer" class="ui-layer">
+            <button id="fullscreenToggle" class="icon-button" type="button" aria-label="Toggle fullscreen" data-tooltip="Toggle fullscreen">⛶</button>
+
+            <aside id="statsPanel" class="stats-panel panel">
+                <div class="panel-title">Farm Status</div>
+                <div class="stat-row"><span>Time</span><strong id="statTime">06:00</strong></div>
+                <div class="stat-row"><span>Energy</span><strong id="statEnergy">100%</strong></div>
+                <div class="stat-row"><span>Location</span><strong id="statLocation">Homestead</strong></div>
+                <div class="stat-row resources"><span>Resources</span><strong id="statResources">Wood 0 · Stone 0 · Seeds 0 · Crops 0 · Watered 0</strong></div>
+            </aside>
+
+            <div id="startHint" class="start-hint">P pauses · F or click uses tool · Q/E cycles slots · G drops one item</div>
+
+            <section id="menuOverlay" class="overlay active" aria-hidden="false">
+                <div class="menu-panel panel hero-panel">
+                    <img class="menu-logo" src="assets/images/Logo.png" alt="Moondew logo">
+                    <p class="menu-copy">A cozy field is waiting. Start fresh, tune the mood, and head into the valley.</p>
+                    <div class="menu-buttons">
+                        <button type="button" data-menu-action="continue" data-tooltip="Resume your current day">Continue</button>
+                        <button type="button" data-menu-action="new" data-tooltip="Reset your farm and start over">New Game</button>
+                        <button type="button" data-menu-action="settings" data-tooltip="Adjust sound and display settings">Settings</button>
+                        <button type="button" data-menu-action="quit" data-tooltip="Return to the title screen">Quit</button>
+                    </div>
+                    <div class="settings-panel hidden" data-settings-panel>
+                        <label>
+                            <span>Music volume</span>
+                            <input id="volumeControl" type="range" min="0" max="100" value="20">
+                        </label>
+                        <button id="settingsFullscreen" type="button" class="secondary-button" data-tooltip="Use fullscreen for a larger play area">Toggle Fullscreen</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="pauseOverlay" class="overlay hidden" aria-hidden="true">
+                <div class="menu-panel panel compact-panel">
+                    <h2 data-menu-title>Paused</h2>
+                    <p class="menu-copy">Take a breather, then jump right back into the day.</p>
+                    <div class="menu-buttons">
+                        <button type="button" data-menu-action="continue" data-tooltip="Resume play">Continue</button>
+                        <button type="button" data-menu-action="new" data-tooltip="Start a brand-new farm">New Game</button>
+                        <button type="button" data-menu-action="settings" data-tooltip="Adjust sound and display settings">Settings</button>
+                        <button type="button" data-menu-action="quit" data-tooltip="Return to the title screen">Quit</button>
+                    </div>
+                    <div class="settings-panel hidden" data-settings-panel>
+                        <label>
+                            <span>Music volume</span>
+                            <input id="pauseVolumeControl" type="range" min="0" max="100" value="20">
+                        </label>
+                        <button id="pauseSettingsFullscreen" type="button" class="secondary-button" data-tooltip="Use fullscreen for a larger play area">Toggle Fullscreen</button>
+                    </div>
+                </div>
+            </section>
+
+            <div id="toolIndicator" class="tool-indicator">Hands</div>
+            <div id="tooltip" class="tooltip hidden" role="tooltip"></div>
+            <div id="toast" class="toast hidden"></div>
+            <div id="transitionOverlay" class="transition-overlay"></div>
+        </div>
+    </div>
 
     <script src="./assets/src/classes/character.js"></script>
+    <script src="./assets/src/classes/item.js"></script>
+    <script src="./assets/src/classes/inventory.js"></script>
     <script src="./assets/src/classes/actionbar.js"></script>
-    <script src="./assets/src/input.js"></script>
     <script src="./assets/src/classes/world.js"></script>
+    <script src="./assets/src/classes/gamestate.js"></script>
+    <script src="./assets/src/classes/animation.js"></script>
+    <script src="./assets/src/classes/particles.js"></script>
+    <script src="./assets/src/classes/pauseMenu.js"></script>
+    <script src="./assets/src/classes/uiManager.js"></script>
+    <script src="./assets/src/input.js"></script>
     <script src="./game.js"></script>
 </body>
 </html>
