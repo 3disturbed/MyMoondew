@@ -1,9 +1,388 @@
-#game{
-    width: 99.9vw;
-    border: 1px solid black;
-    position: absolute;
-    top: 0;
-    left: 0;
-    aspect-ratio: 16,9;
+:root {
+    color-scheme: dark;
+    --bg: #09120a;
+    --panel: rgba(14, 31, 18, 0.82);
+    --panel-strong: rgba(18, 40, 23, 0.94);
+    --panel-border: rgba(170, 232, 153, 0.22);
+    --text: #f2f8e8;
+    --muted: #b8c8ae;
+    --accent: #8fe36a;
+    --accent-strong: #5ec14b;
+    --accent-soft: rgba(143, 227, 106, 0.18);
+    --danger: #ff8578;
+    --shadow: 0 28px 80px rgba(0, 0, 0, 0.42);
+    --radius: 24px;
+    --transition: 180ms ease;
 }
 
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    min-height: 100%;
+    overflow: hidden;
+    font-family: Inter, "Segoe UI", Arial, sans-serif;
+    background:
+        radial-gradient(circle at top, rgba(88, 147, 67, 0.22), transparent 38%),
+        linear-gradient(180deg, #0d170d 0%, #071007 100%);
+    color: var(--text);
+}
+
+body {
+    display: grid;
+    place-items: center;
+    padding: 16px;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+.app-shell {
+    position: relative;
+    width: min(calc(100vw - 32px), calc((100vh - 32px) * 16 / 9));
+    aspect-ratio: 16 / 9;
+}
+
+#game {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border-radius: var(--radius);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, #18311a 0%, #102212 100%);
+    box-shadow: var(--shadow);
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    transition: filter var(--transition), transform var(--transition), box-shadow var(--transition);
+}
+
+#game.cursor-hand { cursor: grab; }
+#game.cursor-hoe,
+#game.cursor-trowel,
+#game.cursor-watering-can,
+#game.cursor-scythe,
+#game.cursor-fertilizer,
+#game.cursor-axe,
+#game.cursor-pickaxe,
+#game.cursor-sword,
+#game.cursor-net { cursor: crosshair; }
+#game.tool-active { filter: saturate(1.06) brightness(1.03); }
+
+.ui-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.panel,
+.menu-panel,
+.icon-button,
+.tooltip,
+.toast,
+.tool-indicator {
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 18px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.26);
+}
+
+.stats-panel {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: min(360px, calc(100% - 40px));
+    padding: 16px 18px;
+    transition: transform var(--transition), opacity var(--transition);
+}
+
+.panel-title {
+    margin-bottom: 12px;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+}
+
+.stat-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 8px 0;
+    font-size: 0.98rem;
+}
+
+.stat-row span {
+    color: var(--muted);
+}
+
+.stat-row strong {
+    text-align: right;
+}
+
+.stat-row.resources {
+    align-items: flex-start;
+}
+
+.stat-row.resources strong {
+    max-width: 210px;
+    line-height: 1.4;
+}
+
+.start-hint {
+    position: absolute;
+    left: 50%;
+    bottom: 122px;
+    transform: translateX(-50%);
+    padding: 10px 16px;
+    border-radius: 999px;
+    background: rgba(5, 11, 6, 0.62);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--muted);
+    font-size: 0.9rem;
+    letter-spacing: 0.02em;
+}
+
+.icon-button,
+.menu-buttons button,
+.secondary-button {
+    pointer-events: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text);
+    transition:
+        transform var(--transition),
+        background var(--transition),
+        border-color var(--transition),
+        box-shadow var(--transition),
+        opacity var(--transition);
+}
+
+.icon-button,
+.secondary-button {
+    background: rgba(8, 18, 10, 0.74);
+}
+
+.icon-button:hover,
+.menu-buttons button:hover,
+.secondary-button:hover,
+.icon-button:focus-visible,
+.menu-buttons button:focus-visible,
+.secondary-button:focus-visible {
+    transform: translateY(-2px) scale(1.01);
+    border-color: rgba(143, 227, 106, 0.48);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.22);
+    outline: none;
+}
+
+.icon-button:active,
+.menu-buttons button:active,
+.secondary-button:active {
+    transform: translateY(0) scale(0.985);
+}
+
+.icon-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 52px;
+    height: 52px;
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    font-size: 1.35rem;
+}
+
+.overlay {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(2, 7, 3, 0.46);
+    opacity: 1;
+    transition: opacity 220ms ease;
+}
+
+.overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.menu-panel {
+    width: min(460px, calc(100% - 40px));
+    padding: 30px;
+    text-align: center;
+    background: linear-gradient(180deg, rgba(18, 37, 21, 0.94), rgba(10, 21, 12, 0.92));
+}
+
+.hero-panel {
+    padding-top: 26px;
+}
+
+.compact-panel {
+    width: min(420px, calc(100% - 40px));
+}
+
+.menu-logo {
+    width: min(260px, 70%);
+    height: auto;
+    margin-bottom: 8px;
+    filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.28));
+}
+
+.menu-copy {
+    margin: 0 0 20px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.menu-panel h2 {
+    margin: 0 0 8px;
+    font-size: 2rem;
+}
+
+.menu-buttons {
+    display: grid;
+    gap: 12px;
+}
+
+.menu-buttons button,
+.secondary-button {
+    border-radius: 16px;
+    padding: 14px 18px;
+}
+
+.menu-buttons button {
+    background: linear-gradient(180deg, rgba(36, 71, 42, 0.94), rgba(20, 45, 25, 0.98));
+}
+
+.menu-buttons button[disabled] {
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+.settings-panel {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: grid;
+    gap: 14px;
+    text-align: left;
+}
+
+.settings-panel.hidden {
+    display: none;
+}
+
+.settings-panel label {
+    display: grid;
+    gap: 8px;
+    color: var(--muted);
+}
+
+.settings-panel input[type="range"] {
+    accent-color: var(--accent);
+}
+
+.secondary-button {
+    width: 100%;
+}
+
+.tooltip,
+.tool-indicator,
+.toast {
+    position: fixed;
+    z-index: 30;
+    pointer-events: none;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tooltip {
+    max-width: 260px;
+    padding: 10px 12px;
+    background: rgba(7, 15, 8, 0.94);
+    color: var(--text);
+    font-size: 0.9rem;
+    line-height: 1.45;
+    transform: translate(14px, 14px);
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28);
+}
+
+.tool-indicator {
+    right: 20px;
+    bottom: 20px;
+    padding: 10px 14px;
+    background: rgba(8, 18, 10, 0.82);
+    color: var(--text);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition: transform var(--transition), opacity var(--transition), background var(--transition);
+}
+
+.tool-indicator.active {
+    transform: scale(1.06);
+    background: rgba(38, 79, 40, 0.94);
+}
+
+.toast {
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%);
+    padding: 12px 16px;
+    background: rgba(5, 12, 6, 0.92);
+    color: var(--text);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.28);
+}
+
+.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.transition-overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius);
+    background: radial-gradient(circle at center, rgba(8, 18, 10, 0.08), rgba(1, 4, 2, 0.92));
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 260ms ease;
+}
+
+.transition-overlay.active {
+    opacity: 1;
+}
+
+@media (max-width: 900px) {
+    .stats-panel {
+        width: calc(100% - 28px);
+        top: 14px;
+        left: 14px;
+        padding: 12px 14px;
+    }
+
+    .stat-row {
+        font-size: 0.88rem;
+    }
+
+    .start-hint {
+        bottom: 110px;
+        width: calc(100% - 28px);
+        text-align: center;
+    }
+
+    .tool-indicator {
+        right: 14px;
+        bottom: 14px;
+    }
+}
