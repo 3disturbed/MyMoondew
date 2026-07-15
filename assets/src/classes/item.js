@@ -24,7 +24,13 @@ const ITEM_LIBRARY = {
     "Tomato": {name: "Tomato", type: ITEM_TYPES.PRODUCE, maxStack: 25, icon: null, color: "#de6558", description: "A ripe tomato picked at peak freshness."},
     "Corn": {name: "Corn", type: ITEM_TYPES.PRODUCE, maxStack: 25, icon: null, color: "#efcf58", description: "A sweet ear of corn ready for storage."},
     "Wood": {name: "Wood", type: ITEM_TYPES.RESOURCE, maxStack: 50, icon: null, color: "#8b5a2b", description: "A basic crafting resource."},
-    "Stone": {name: "Stone", type: ITEM_TYPES.RESOURCE, maxStack: 50, icon: null, color: "#8f9aa3", description: "A basic building resource."}
+    "Stone": {name: "Stone", type: ITEM_TYPES.RESOURCE, maxStack: 50, icon: null, color: "#8f9aa3", description: "A basic building resource."},
+    "Strawberry Seeds": {name: "Strawberry Seeds", type: ITEM_TYPES.SEED, maxStack: 25, icon: null, color: "#e04870", description: "Sweet berry seeds that yield a juicy harvest."},
+    "Blueberry Seeds": {name: "Blueberry Seeds", type: ITEM_TYPES.SEED, maxStack: 25, icon: null, color: "#5878e0", description: "Small blue berry seeds packed with flavor."},
+    "Strawberry": {name: "Strawberry", type: ITEM_TYPES.PRODUCE, maxStack: 25, icon: null, color: "#e03850", description: "A ripe, red strawberry ready to eat."},
+    "Blueberry": {name: "Blueberry", type: ITEM_TYPES.PRODUCE, maxStack: 25, icon: null, color: "#4858d8", description: "A sweet cluster of ripe blueberries."},
+    "Fish": {name: "Fish", type: ITEM_TYPES.PRODUCE, maxStack: 25, icon: null, color: "#5090c0", description: "A freshwater fish pulled from the river."},
+    "Fishing Rod": {name: "Fishing Rod", type: ITEM_TYPES.TOOL, maxStack: 1, icon: null, color: "#7a5020", mode: 10, description: "Cast a line near water to catch fish."}
 };
 
 class Item {

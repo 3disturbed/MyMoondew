@@ -125,3 +125,77 @@ document.addEventListener("mousemove", (event) => {
 document.addEventListener("click", (event) => {
     window.app?.handlePointerClick(event);
 });
+
+// ── On-screen mobile controls ────────────────────────────────────────
+
+function setupMobileControls() {
+    const dpadMap = {
+        dpadUp: "w",
+        dpadDown: "s",
+        dpadLeft: "a",
+        dpadRight: "d"
+    };
+
+    Object.entries(dpadMap).forEach(([btnId, key]) => {
+        const btn = document.getElementById(btnId);
+        if (!btn) {
+            return;
+        }
+
+        const onPress = (e) => {
+            e.preventDefault();
+            btn.classList.add("pressed");
+            updateMovementKey(key, true);
+        };
+
+        const onRelease = (e) => {
+            e.preventDefault();
+            btn.classList.remove("pressed");
+            updateMovementKey(key, false);
+        };
+
+        btn.addEventListener("touchstart", onPress, {passive: false});
+        btn.addEventListener("touchend", onRelease, {passive: false});
+        btn.addEventListener("touchcancel", onRelease, {passive: false});
+        btn.addEventListener("mousedown", onPress);
+        btn.addEventListener("mouseup", onRelease);
+        btn.addEventListener("mouseleave", onRelease);
+    });
+
+    document.getElementById("mobileUseTool")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (typeof window.useTool === "function") {
+            window.useTool();
+        }
+    });
+
+    document.getElementById("mobileSeed")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (typeof cycleSelectedSeed === "function") {
+            cycleSelectedSeed();
+        }
+    });
+
+    document.getElementById("mobilePrevSlot")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        window.app?.selectNextSlot(-1);
+    });
+
+    document.getElementById("mobileNextSlot")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        window.app?.selectNextSlot(1);
+    });
+
+    document.getElementById("mobileSleep")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (typeof gameState !== "undefined" && typeof world !== "undefined") {
+            if (!gameState.attemptSleep(world, character, inventory)) {
+                if (typeof setHudMessage === "function") {
+                    setHudMessage("You can only sleep while standing inside the home square.");
+                }
+            }
+        }
+    });
+}
+
+setupMobileControls();

@@ -21,7 +21,7 @@
                 <div class="stat-row resources"><span>Resources</span><strong id="statResources">Wood 0 · Stone 0 · Seeds 0 · Crops 0 · Watered 0</strong></div>
             </aside>
 
-            <div id="startHint" class="start-hint">P pauses · F or click uses tool · Q/E cycles slots · G drops one item</div>
+            <div id="startHint" class="start-hint">P pauses · F or click uses tool · Q/E cycles slots · G drops · R cycles seeds · Use on-screen D-pad on touch devices</div>
 
             <section id="menuOverlay" class="overlay active" aria-hidden="false">
                 <div class="menu-panel panel hero-panel">
@@ -67,6 +67,31 @@
             <div id="tooltip" class="tooltip hidden" role="tooltip"></div>
             <div id="toast" class="toast hidden"></div>
             <div id="transitionOverlay" class="transition-overlay"></div>
+
+            <div id="mobileControls" class="mobile-controls" aria-label="On-screen game controls">
+                <div class="dpad" role="group" aria-label="Movement controls">
+                    <button class="dpad-btn" id="dpadUp" type="button" aria-label="Move up">▲</button>
+                    <div class="dpad-middle-row">
+                        <button class="dpad-btn" id="dpadLeft" type="button" aria-label="Move left">◀</button>
+                        <div class="dpad-center" aria-hidden="true"></div>
+                        <button class="dpad-btn" id="dpadRight" type="button" aria-label="Move right">▶</button>
+                    </div>
+                    <button class="dpad-btn" id="dpadDown" type="button" aria-label="Move down">▼</button>
+                </div>
+                <div class="mobile-action-btns" role="group" aria-label="Action controls">
+                    <div class="mobile-action-row">
+                        <button class="mobile-action-btn" id="mobileUseTool" type="button" aria-label="Use selected tool">⚡ Use</button>
+                        <button class="mobile-action-btn" id="mobileSeed" type="button" aria-label="Cycle seeds">🌱 Seed</button>
+                    </div>
+                    <div class="mobile-action-row">
+                        <button class="mobile-action-btn" id="mobilePrevSlot" type="button" aria-label="Previous inventory slot">◀ Slot</button>
+                        <button class="mobile-action-btn" id="mobileNextSlot" type="button" aria-label="Next inventory slot">Slot ▶</button>
+                    </div>
+                    <div class="mobile-action-row">
+                        <button class="mobile-action-btn mobile-sleep-btn" id="mobileSleep" type="button" aria-label="Sleep at home">💤 Sleep</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
