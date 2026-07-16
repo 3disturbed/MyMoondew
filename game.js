@@ -11,7 +11,8 @@ const TOOL_CURSOR_MAP = {
     6: { label: "Axe", cursorClass: "cursor-axe" },
     7: { label: "Pickaxe", cursorClass: "cursor-pickaxe" },
     8: { label: "Sword", cursorClass: "cursor-sword" },
-    9: { label: "Net", cursorClass: "cursor-net" }
+    9: { label: "Net", cursorClass: "cursor-net" },
+    10: { label: "Fishing Rod", cursorClass: "cursor-fishing-rod" }
 };
 
 const TOOL_ENERGY_COSTS = {
@@ -23,7 +24,8 @@ const TOOL_ENERGY_COSTS = {
     6: 7,
     7: 7,
     8: 5,
-    9: 3
+    9: 3,
+    10: 4
 };
 
 const PLANTABLE_SEED_ITEMS = Object.values(CROP_TYPES).map((cropData) => cropData.seedItem);
@@ -146,22 +148,7 @@ function cycleSelectedSeed() {
 }
 
 function getLocationLabel() {
-    if (gameState.isAtHome(character)) {
-        return "Homestead";
-    }
-    if (character.y < -1600) {
-        return "North Field";
-    }
-    if (character.y > 1600) {
-        return "South Meadow";
-    }
-    if (character.x < -1600) {
-        return "West Grove";
-    }
-    if (character.x > 1600) {
-        return "East Orchard";
-    }
-    return "Fields";
+    return world ? world.getLocationName(character.x, character.y) : "Homestead";
 }
 
 function getResourceSummary() {
@@ -367,22 +354,44 @@ function useTool(preferredTile = null) {
                 result = { success: true, message: "The crop perked up after fertilizing." };
             }
             break;
-        case 6:
+        case 6: {
+            const nearTree = world.getNearestTree(character.x, character.y, 128);
+            if (!nearTree) {
+                result = { success: false, message: "Move closer to a tree to chop it." };
+                break;
+            }
             if (trySpendEnergy(selectedItem.mode)) {
-                world.addItemToInventoryOrWorld(inventory, createItem("Wood"), character.x, character.y);
+                nearTree.chop();
                 character.triggerToolAnimation();
-                triggerActionFeedback("harvest", targetTile, 2.4);
-                result = { success: true, message: "Chopped some wood." };
+                triggerActionFeedback("harvest", null, 2.4);
+                if (nearTree.fallen) {
+                    world.addItemToInventoryOrWorld(inventory, createItem("Wood", { quantity: 3 }), character.x, character.y);
+                    result = { success: true, message: "You chopped down the tree!" };
+                } else {
+                    result = { success: true, message: `Chopping… (${nearTree.health} hit${nearTree.health === 1 ? "" : "s"} left)` };
+                }
             }
             break;
-        case 7:
+        }
+        case 7: {
+            const nearRock = world.getNearestRock(character.x, character.y, 128);
+            if (!nearRock) {
+                result = { success: false, message: "Move closer to a rock to mine it." };
+                break;
+            }
             if (trySpendEnergy(selectedItem.mode)) {
-                world.addItemToInventoryOrWorld(inventory, createItem("Stone"), character.x, character.y);
+                nearRock.mine();
                 character.triggerToolAnimation();
-                triggerActionFeedback("harvest", targetTile, 2.6);
-                result = { success: true, message: "Broke off a piece of stone." };
+                triggerActionFeedback("harvest", null, 2.6);
+                if (nearRock.broken) {
+                    world.addItemToInventoryOrWorld(inventory, createItem("Stone", { quantity: 3 }), character.x, character.y);
+                    result = { success: true, message: "You broke apart the rock!" };
+                } else {
+                    result = { success: true, message: `Mining… (${nearRock.health} hit${nearRock.health === 1 ? "" : "s"} left)` };
+                }
             }
             break;
+        }
         case 8:
             if (trySpendEnergy(selectedItem.mode)) {
                 character.triggerToolAnimation();
@@ -395,6 +404,22 @@ function useTool(preferredTile = null) {
                 character.triggerToolAnimation();
                 triggerActionFeedback("default", targetTile, 1.2);
                 result = { success: true, message: "The net came back empty this time." };
+            }
+            break;
+        case 10:
+            if (!world.isNearWater(character.x, character.y, 160)) {
+                result = { success: false, message: "Head to the river valley east of home to fish." };
+                break;
+            }
+            if (trySpendEnergy(selectedItem.mode)) {
+                character.triggerToolAnimation();
+                triggerActionFeedback("watering", null, 1.2);
+                if (Math.random() < 0.65) {
+                    world.addItemToInventoryOrWorld(inventory, createItem("Fish"), character.x, character.y);
+                    result = { success: true, message: "You caught a fish!" };
+                } else {
+                    result = { success: true, message: "Nothing on the line this time…" };
+                }
             }
             break;
         default:
